@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text File Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -37,46 +38,48 @@
                 body: formData
             });
 
-            const result = await response.json();
-            document.getElementById('results').style.display = 'block';
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('results').style.display = 'block';
 
-            document.getElementById('basic-analysis').innerHTML = `
-                <h3>Basic Analysis</h3>
-                <p>Character Count: ${result.basic_analysis.character_count}</p>
-                <p>Character Count (No Spaces): ${result.basic_analysis.character_count_no_spaces}</p>
-                <p>Sentence Count: ${result.basic_analysis.sentence_count}</p>
-                <p>Word Count: ${result.basic_analysis.word_count}</p>
-            `;
+                document.getElementById('basic-analysis').innerHTML = `
+                    <h3>Basic Analysis</h3>
+                    <p>Character Count: ${result.basic_analysis.character_count}</p>
+                    <p>Character Count (No Spaces): ${result.basic_analysis.character_count_no_spaces}</p>
+                    <p>Sentence Count: ${result.basic_analysis.sentence_count}</p>
+                    <p>Word Count: ${result.basic_analysis.word_count}</p>
+                `;
 
-            document.getElementById('keyword-frequency').innerHTML = `
-                <h3>Keyword Frequency</h3>
-                
-                    ${Object.entries(result.keyword_frequency).map(([keyword, count]) => `<li>${keyword}: ${count}</li>`).join('')}
-                
-            `;
+                document.getElementById('keyword-frequency').innerHTML = `
+                    <h3>Keyword Frequency</h3>
+                    <ul>
+                        ${Object.entries(result.keyword_frequency).map(([keyword, count]) => `<li>${keyword}: ${count}</li>`).join('')}
+                    </ul>
+                `;
 
-            let commonWordsHtml = '<h3>Most Common Words</h3><ul>';
-result.most_common_words.forEach(([word, freq]) => {
-    // Regular expression to match and exclude special characters and symbols
-    if (/^[a-zA-Z]+$/.test(word)) {
-        commonWordsHtml += `<li>${word} : ${freq}</li>`;
-    }
-});
-commonWordsHtml += '</ul>';
-document.getElementById('most-common-words').innerHTML = commonWordsHtml;
+                let commonWordsHtml = '<h3>Most Common Words</h3><ul>';
+                result.most_common_words.forEach(([word, freq]) => {
+                    if (/^[a-zA-Z]+$/.test(word)) {
+                        commonWordsHtml += `<li>${word}: ${freq}</li>`;
+                    }
+                });
+                commonWordsHtml += '</ul>';
+                document.getElementById('most-common-words').innerHTML = commonWordsHtml;
 
+                document.getElementById('readability-scores').innerHTML = `
+                    <h3>Readability Scores</h3>
+                    <p>Flesch-Kincaid: ${result.readability_scores.flesch_kincaid}</p>
+                    <p>Gunning Fog: ${result.readability_scores.gunning_fog}</p>
+                `;
 
-            document.getElementById('readability-scores').innerHTML = `
-                <h3>Readability Scores</h3>
-                <p>Flesch-Kincaid: ${result.readability_scores.flesch_kincaid}</p>
-                <p>Gunning Fog: ${result.readability_scores.gunning_fog}</p>
-            `;
-
-            document.getElementById('sentiment-analysis').innerHTML = `
-                <h3>Sentiment Analysis</h3>
-                <p>Polarity: ${result.sentiment_analysis.polarity}</p>
-                <p>Subjectivity: ${result.sentiment_analysis.subjectivity}</p>
-            `;
+                document.getElementById('sentiment-analysis').innerHTML = `
+                    <h3>Sentiment Analysis</h3>
+                    <p>Polarity: ${result.sentiment_analysis.polarity}</p>
+                    <p>Subjectivity: ${result.sentiment_analysis.subjectivity}</p>
+                `;
+            } else {
+                console.error('Error analyzing file:', response.statusText);
+            }
         });
     </script>
 </body>
