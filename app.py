@@ -3,7 +3,7 @@ import nltk
 import os
 
 # Set the environment variable for NLTK data path
-nltk.data.path.append('D:\\Text_File_Analyzer\\nltk_data')
+nltk.data.path.append('nltk_data')
 
 from textblob import TextBlob
 from collections import Counter
