@@ -1,13 +1,16 @@
 from flask import Flask, request, render_template, jsonify
 import nltk
-import os
-
-# Set the environment variable for NLTK data path
-nltk.data.path.append('nltk_data')
-
 from textblob import TextBlob
 from collections import Counter
+import os
 import json
+import tempfile
+
+nltk.data.path.append('/path/to/your/project/nltk_data')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+nltk.download('stopwords')
 
 app = Flask(__name__)
 
@@ -79,11 +82,15 @@ def index():
 def analyze():
     print("Analyze endpoint hit")
     file = request.files['file']
-    file_path = os.path.join('uploads', file.filename)
-    file.save(file_path)
-    print(f"File saved to: {file_path}")
+    
+    # Use a temporary file to save the uploaded file
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        file.save(temp_file.name)
+        temp_file_path = temp_file.name
+    
+    print(f"File saved to: {temp_file_path}")
 
-    text = read_file(file_path)
+    text = read_file(temp_file_path)
 
     keywords = request.form.get('keywords')
     if keywords:
