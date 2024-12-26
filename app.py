@@ -1,16 +1,14 @@
 from flask import Flask, request, render_template, jsonify
 import nltk
-from textblob import TextBlob
-from collections import Counter
 import os
-import json
 import tempfile
 
-nltk.data.path.append('/path/to/your/project/nltk_data')
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('wordnet')
-nltk.download('stopwords')
+# Set the environment variable for NLTK data path
+nltk.data.path.append('nltk_data')
+
+from textblob import TextBlob
+from collections import Counter
+import json
 
 app = Flask(__name__)
 
