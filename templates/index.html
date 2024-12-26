@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Text File Analyzer</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" name="file" id="file" required>
+            <input type="text" id="keywords" name="keywords" placeholder="Enter keywords, separated by commas">
+            <button type="submit">Analyze</button>
+        </form>
+        <div class="results" id="results" style="display: none;">
+            <h2>Analysis Results:</h2>
+            <div id="basic-analysis" class="result-section"></div>
+            <div id="keyword-frequency" class="result-section"></div>
+            <div id="most-common-words" class="result-section"></div>
+            <div id="readability-scores" class="result-section"></div>
+            <div id="sentiment-analysis" class="result-section"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('file');
+            const keywordsInput = document.getElementById('keywords').value.split(',').map(keyword => keyword.trim());
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('keywords', JSON.stringify(keywordsInput));
+
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            document.getElementById('results').style.display = 'block';
+
+            document.getElementById('basic-analysis').innerHTML = `
+                <h3>Basic Analysis</h3>
+                <p>Character Count: ${result.basic_analysis.character_count}</p>
+                <p>Character Count (No Spaces): ${result.basic_analysis.character_count_no_spaces}</p>
+                <p>Sentence Count: ${result.basic_analysis.sentence_count}</p>
+                <p>Word Count: ${result.basic_analysis.word_count}</p>
+            `;
+
+            document.getElementById('keyword-frequency').innerHTML = `
+                <h3>Keyword Frequency</h3>
+                
+                    ${Object.entries(result.keyword_frequency).map(([keyword, count]) => `<li>${keyword}: ${count}</li>`).join('')}
+                
+            `;
+
+            let commonWordsHtml = '<h3>Most Common Words</h3><ul>';
+result.most_common_words.forEach(([word, freq]) => {
+    // Regular expression to match and exclude special characters and symbols
+    if (/^[a-zA-Z]+$/.test(word)) {
+        commonWordsHtml += `<li>${word} : ${freq}</li>`;
+    }
+});
+commonWordsHtml += '</ul>';
+document.getElementById('most-common-words').innerHTML = commonWordsHtml;
+
+
+            document.getElementById('readability-scores').innerHTML = `
+                <h3>Readability Scores</h3>
+                <p>Flesch-Kincaid: ${result.readability_scores.flesch_kincaid}</p>
+                <p>Gunning Fog: ${result.readability_scores.gunning_fog}</p>
+            `;
+
+            document.getElementById('sentiment-analysis').innerHTML = `
+                <h3>Sentiment Analysis</h3>
+                <p>Polarity: ${result.sentiment_analysis.polarity}</p>
+                <p>Subjectivity: ${result.sentiment_analysis.subjectivity}</p>
+            `;
+        });
+    </script>
+</body>
+</html>
